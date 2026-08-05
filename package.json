@@ -1,0 +1,37 @@
+{
+  "name": "@olamtostudio/agents",
+  "version": "1.0.0",
+  "description": "Official Olamto Autonomous Agent SDK for Cloudflare Workers AI, Robinhood EVM Chain (4663), and Solana MCP Portals",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 0"
+  },
+  "keywords": [
+    "Olamto",
+    "cloudflare",
+    "agents",
+    "web3",
+    "robinhood-chain",
+    "solana-mcp",
+    "ai-studio"
+  ],
+  "author": "Olamto Core Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OlamtoStudio/agents.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OlamtoStudio/agents/issues"
+  },
+  "homepage": "https://github.com/OlamtoStudio/agents#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@cloudflare/workers-types": "^4.20241112.0"
+  }
+}
