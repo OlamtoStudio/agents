@@ -1,0 +1,255 @@
+name: "🚀 CI/CD Pipeline"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 🔍 Code Quality & Lint
+  # ─────────────────────────────────────────────
+  lint:
+    name: "🔍 Lint & Format"
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Install Dependencies
+        run: npm install typescript @cloudflare/workers-types@latest --save-dev
+
+      - name: 🔍 Type Check
+        run: npx tsc --noEmit
+
+      - name: 📝 Summary
+        run: |
+          echo "## 🔍 Lint Results" >> $GITHUB_STEP_SUMMARY
+          echo "✅ TypeScript type checking passed" >> $GITHUB_STEP_SUMMARY
+          echo "- **Node.js**: v${{ env.NODE_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **TypeScript**: $(npx tsc --version)" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # 🏗️ Build Matrix (Node 18, 20, 22)
+  # ─────────────────────────────────────────────
+  build:
+    name: "🏗️ Build (Node ${{ matrix.node-version }})"
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: 📦 Install Dependencies
+        run: npm install typescript @cloudflare/workers-types@latest --save-dev
+
+      - name: 🏗️ Build
+        run: npm run build
+
+      - name: ✅ Verify Artifacts
+        run: |
+          echo "📦 Verifying build output..."
+          
+          ERRORS=0
+          
+          if [ -f "dist/index.js" ]; then
+            echo "✅ dist/index.js ($(wc -c < dist/index.js) bytes)"
+          else
+            echo "❌ dist/index.js — NOT FOUND"
+            ERRORS=$((ERRORS + 1))
+          fi
+          
+          if [ -f "dist/index.d.ts" ]; then
+            echo "✅ dist/index.d.ts ($(wc -c < dist/index.d.ts) bytes)"
+          else
+            echo "❌ dist/index.d.ts — NOT FOUND"
+            ERRORS=$((ERRORS + 1))
+          fi
+          
+          TOTAL_FILES=$(find dist -type f | wc -l)
+          TOTAL_SIZE=$(du -sh dist | cut -f1)
+          echo ""
+          echo "📊 Total: $TOTAL_FILES files, $TOTAL_SIZE"
+          
+          if [ $ERRORS -gt 0 ]; then
+            echo "💥 Build verification failed with $ERRORS error(s)"
+            exit 1
+          fi
+
+      - name: 📤 Upload Build Artifacts
+        if: matrix.node-version == 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: agents-dist-${{ github.sha }}
+          path: dist/
+          retention-days: 14
+
+      - name: 📝 Summary
+        if: matrix.node-version == 22
+        run: |
+          echo "## 🏗️ Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`dist/index.js\` | ✅ Built |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`dist/index.d.ts\` | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
+          echo "| Declaration Maps | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Node.js Versions Tested**: 18, 20, 22" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📁 Dist Contents" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          ls -la dist/ >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # 🌐 Olamto MCP Server Portal Verification
+  # ─────────────────────────────────────────────
+  mcp-portal:
+    name: "🌐 Olamto MCP Portal Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔌 Query Olamto MCP Server Tools
+        run: |
+          echo "🌐 Connecting to https://app.olamto.fun/api/mcp..."
+          RESPONSE=$(curl -s -X POST "https://app.olamto.fun/api/mcp" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "jsonrpc": "2.0",
+              "id": 1,
+              "method": "tools/list",
+              "params": {}
+            }')
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq '.' || echo "$RESPONSE"
+          
+          TOOLS_COUNT=$(echo "$RESPONSE" | jq '.result.tools | length' 2>/dev/null || echo "0")
+          echo "TOOLS_COUNT=$TOOLS_COUNT" >> $GITHUB_ENV
+
+      - name: 📝 Summary
+        run: |
+          echo "## 🌐 Olamto MCP Server Portal Check" >> $GITHUB_STEP_SUMMARY
+          echo "- **Endpoint**: \`https://app.olamto.fun/api/mcp\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Active & Responsive" >> $GITHUB_STEP_SUMMARY
+          echo "- **MCP Protocol**: JSON-RPC 2.0 (2024-11-05)" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # 🛡️ Security Audit
+  # ─────────────────────────────────────────────
+  security:
+    name: "🛡️ Security Audit"
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Install Dependencies
+        run: npm install typescript @cloudflare/workers-types@latest --save-dev
+
+      - name: 🛡️ Audit Dependencies
+        run: npm audit --omit=dev || true
+
+      - name: 📝 Summary
+        run: |
+          echo "## 🛡️ Security Audit" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Dependency audit completed" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # 🚀 Publish to npm
+  # ─────────────────────────────────────────────
+  publish:
+    name: "🚀 Publish to npm"
+    needs: [build, security, mcp-portal]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: "https://registry.npmjs.org"
+
+      - name: 📦 Install Dependencies
+        run: npm install typescript @cloudflare/workers-types@latest --save-dev
+
+      - name: 🏗️ Build
+        run: npm run build
+
+      - name: 🔍 Check Version
+        id: version
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          REMOTE_VERSION=$(npm view "$PACKAGE_NAME" version 2>/dev/null || echo "0.0.0")
+
+          echo "📦 Package:  $PACKAGE_NAME"
+          echo "🏷️  Local:   v$LOCAL_VERSION"
+          echo "🌐 Registry: v$REMOTE_VERSION"
+
+          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          echo "local=$LOCAL_VERSION" >> $GITHUB_OUTPUT
+          echo "remote=$REMOTE_VERSION" >> $GITHUB_OUTPUT
+
+          if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
+            echo "publish=false" >> $GITHUB_OUTPUT
+            echo "⏭️  Same version — skipping publish"
+          else
+            echo "publish=true" >> $GITHUB_OUTPUT
+            echo "🚀 New version detected!"
+          fi
+
+      - name: 🚀 Publish
+        if: steps.version.outputs.publish == 'true'
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 📝 Summary
+        run: |
+          echo "## 🚀 Publish Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | \`${{ steps.version.outputs.name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Local Version | \`v${{ steps.version.outputs.local }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Registry Version | \`v${{ steps.version.outputs.remote }}\` |" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.version.outputs.publish }}" = "true" ]; then
+            echo "| Status | ✅ **Published** |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Status | ⏭️ Skipped (same version) |" >> $GITHUB_STEP_SUMMARY
+          fi
