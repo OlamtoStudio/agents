@@ -6,14 +6,14 @@
 
 ### Next-Gen Web3 AI Agentic Platform & Cloudflare One MCP Portals
 
-[![npm version](https://img.shields.io/npm/v/@OlamtoStudio/agents?style=for-the-badge&color=cb3837&logo=npm)](https://www.npmjs.com/package/@OlamtoStudio/agents)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-OlamtoStudio%2Fagents-CCFF00?style=for-the-badge&logo=github)](https://github.com/OlamtoStudio/agents)
+[![npm version](https://img.shields.io/npm/v/@olamtostudio/agents?style=for-the-badge&color=cb3837&logo=npm)](https://www.npmjs.com/package/@olamtostudio/agents)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-OlamtoStudio%2Fagents-CCFF00?style=for-the-badge&logo=github)](https://github.com/olamtostudio/agents)
 [![License: MIT](https://img.shields.io/badge/License-MIT-4285F4.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Robinhood Chain](https://img.shields.io/badge/Robinhood-EVM%204663-CCFF00?style=for-the-badge&logo=ethereum)](https://app.olamto.fun)
 [![Solana Network](https://img.shields.io/badge/Solana-MCP%20Autofixer-dc1fff?style=for-the-badge&logo=solana)](https://app.olamto.fun)
 [![Cloudflare Edge](https://img.shields.io/badge/Cloudflare-MCP%20Portals-F38020?style=for-the-badge&logo=cloudflare)](https://app.olamto.fun)
 
-[🌐 Live Studio App](https://app.olamto.fun) • [📖 Developer Docs](https://app.olamto.fun/docs) • [🐙 GitHub](https://github.com/OlamtoStudio/agents) • [𝕏 (Twitter)](https://x.com/OlamtoStudio) • [✈️ Telegram](https://t.me/OlamtoStudio)
+[🌐 Live Studio App](https://app.olamto.fun) • [📖 Developer Docs](https://app.olamto.fun/docs) • [🐙 GitHub](https://github.com/olamtostudio/agents) • [𝕏 (Twitter)](https://x.com/OlamtoStudio) • [✈️ Telegram](https://t.me/OlamtoStudio)
 
 </div>
 
@@ -25,7 +25,7 @@
 
 ```
                      ┌───────────────────────────────────────────────┐
-                     │          Olamto AI Engine Core             │
+                     │          Olamto AI Engine Core                │
                      │       (16 Frontier AI Models Suite)           │
                      └───────────────────────┬───────────────────────┘
                                              │
@@ -42,7 +42,7 @@
 
 ## ✨ Core Features
 
-* **🤖 Autonomous Agent SDK (`@OlamtoStudio/agents`)**: Event-driven agent base class with edge state persistence via Durable Objects and real-time WebSocket fibers.
+* **🤖 Autonomous Agent SDK (`@olamtostudio/agents`)**: Event-driven agent base class with edge state persistence via Durable Objects and real-time WebSocket fibers.
 * **🟢 Robinhood EVM Chain (Chain ID 4663)**: Native Solidity compilation, static vulnerability auditing via Blockscout API, and gas estimation.
 * **🟣 Solana MCP Program Autofixer**: Anchor & Pinocchio Rust smart contract error parsing, IDL generation, and automated code repair.
 * **⚡ Cloudflare One MCP Server Portals**: 5x Token Savings optimization via `minimize_tools()` & `search_and_execute()`, reducing context window usage by up to 80%.
@@ -52,23 +52,23 @@
 
 ## 📦 Installation
 
-Since `@OlamtoStudio/agents` is hosted directly on GitHub, install it directly using npm, yarn, or pnpm:
+Since `@olamtostudio/agents` is hosted directly on GitHub, install it directly using npm, yarn, or pnpm:
 
 ```bash
 # Install directly from GitHub Repository
-npm install github:OlamtoStudio/agents
+npm install github:olamtostudio/agents
 
 # Using yarn
-yarn add OlamtoStudio/agents
+yarn add olamtostudio/agents
 
 # Using pnpm
-pnpm add github:OlamtoStudio/agents
+pnpm add github:olamtostudio/agents
 ```
 
 Or clone and build from source:
 
 ```bash
-git clone https://github.com/OlamtoStudio/agents.git
+git clone https://github.com/olamtostudio/agents.git
 cd agents
 npm install && npm run build
 ```
@@ -80,7 +80,7 @@ npm install && npm run build
 Create an autonomous Web3 AI agent in TypeScript:
 
 ```typescript
-import { Agent, type Connection, type WSMessage, type AgentEnv } from "@OlamtoStudio/agents";
+import { Agent, type Connection, type WSMessage, type AgentEnv } from "@olamtostudio/agents";
 
 export class Web3AuditorAgent extends Agent {
   constructor(env: AgentEnv) {
@@ -121,12 +121,12 @@ export class Web3AuditorAgent extends Agent {
 
 ---
 
-## 📖 SDK Reference (`@OlamtoStudio/agents`)
+## 📖 SDK Reference (`@olamtostudio/agents`)
 
 ### Agent Abstract Base Class
 
 ```typescript
-import { Agent, type Connection, type WSMessage, type AgentEnv } from "@OlamtoStudio/agents";
+import { Agent, type Connection, type WSMessage, type AgentEnv } from "@olamtostudio/agents";
 
 export class CustomAgent extends Agent {
   constructor(env: AgentEnv) {
@@ -159,7 +159,7 @@ const currentState = await this.getState();
 ## ⛓️ Robinhood EVM Chain Integration (Chain ID 4663)
 
 ```typescript
-import { RobinhoodEVM } from "@OlamtoStudio/agents";
+import { RobinhoodEVM } from "@olamtostudio/agents";
 
 const evm = new RobinhoodEVM({
   rpcUrl: "https://rpc.robinhood.olamto.fun",
@@ -186,7 +186,7 @@ console.log("Vulnerabilities:", auditResult.issues);
 ## ☀️ Solana MCP Program Autofixer
 
 ```typescript
-import { SolanaMCP } from "@OlamtoStudio/agents";
+import { SolanaMCP } from "@olamtostudio/agents";
 
 const solana = new SolanaMCP();
 
@@ -204,7 +204,7 @@ console.log("Repaired Rust Code:", fixResult.repairedCode);
 
 * 🌐 **Live Application**: [https://app.olamto.fun](https://app.olamto.fun)
 * 📖 **Developer Documentation**: [https://app.olamto.fun/docs](https://app.olamto.fun/docs)
-* 🐙 **GitHub Repository**: [https://github.com/OlamtoStudio/agents](https://github.com/OlamtoStudio/agents)
+* 🐙 **GitHub Repository**: [https://github.com/olamtostudio/agents](https://github.com/olamtostudio/agents)
 
 ---
 
